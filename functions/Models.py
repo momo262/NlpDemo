@@ -15,6 +15,7 @@ vocab_size = 3000
 maxLength = 400
 #词向量维度
 word_vector_size = 200
+#交叉验证方法
 kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=7)
 
 #得到输入数据的每行词编码
@@ -39,17 +40,21 @@ if __name__ == "__main__":
     scores = []
     for train, test in kfold.split(padded_docs, out_put_array):
         model = Sequential()
+        #词嵌入层
         model.add(Embedding(vocab_size, word_vector_size, input_length=maxLength))
+        #将输入压为1维数组
         model.add(Flatten())
+        #全连接层
         model.add(Dense(1, activation='sigmoid'))
-
+        #模型编译
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
-
+        #模型训练
         model.fit(padded_docs[train], out_put_array[train], epochs=10, verbose=0)
+        #在验证集上评估
         loss, accuracy = model.evaluate(padded_docs[test], out_put_array[test], verbose=0)
         scores.append(100 * accuracy)
         print(100 * accuracy)
-
+    #打印准确率分布
     print("%.2f%% (+/- %.2f%%)" % (np.mean(scores), np.std(scores)))
 
 
