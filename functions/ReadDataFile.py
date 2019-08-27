@@ -27,7 +27,6 @@ def docs_to_wordlist(docs,stopwordlist):
         for word in seg_list:
             if word not in stopwordlist and not word.isdigit():
                 words.append(word)
-        print(words)
         wordlist.append(words)
     return wordlist
 
