@@ -53,10 +53,10 @@ if __name__ == "__main__":
     out_put_array = np.array(outputs)
     #模型打分
     scores = []
+    # 使用基准模型
+    model = init_base_line_model()
 
     for train, test in kfold.split(padded_docs, out_put_array):
-        #使用基准模型
-        model = init_base_line_model()
         #模型训练
         model.fit(padded_docs[train], out_put_array[train], epochs=10, verbose=0)
         #在验证集上评估
