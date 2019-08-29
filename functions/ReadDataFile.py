@@ -20,6 +20,8 @@ def readtxt(path):
 
 #将句子列表进行分词，剔除停用词
 def docs_to_wordlist(docs,stopwordlist):
+    #统计被剔除词
+    deletedwordlist={}
     wordlist = []
     for doc in docs:
         words = []
@@ -27,7 +29,16 @@ def docs_to_wordlist(docs,stopwordlist):
         for word in seg_list:
             if word not in stopwordlist and not word.isdigit():
                 words.append(word)
+            else:
+                #已经被剔除过，则+1，否则put进去
+                if deletedwordlist.__contains__(word):
+                    deletedwordlist[word] += 1
+                else:
+                    deletedwordlist[word] = 1
         wordlist.append(words)
+
+    deletedwordlist = sorted(deletedwordlist.items(), key=lambda x: x[1], reverse=True)
+    print(deletedwordlist)
     return wordlist
 
 #统计标签的类别分布
