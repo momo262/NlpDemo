@@ -10,13 +10,17 @@ from tensorflow.keras.callbacks import TensorBoard
 from sklearn.model_selection import StratifiedKFold
 
 #词索引数
+#TODO
 vocab_size = 3000
 #句子最大词数
+#TODO
 maxLength = 400
 #词向量维度
+#TODO
 word_vector_size = 200
 #交叉验证方法
 kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=7)
+
 
 #得到输入数据的每行词编码
 def get_encoded_docs(wordlist):
@@ -46,7 +50,7 @@ def init_base_line_model():
 
 if __name__ == "__main__":
     inputs, outputs = rdf.readcsv('../data/ChnSentiCorp_htl_all.csv')
-    wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'))
+    wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'), rdf.readtxt('../data/白名单词库.txt'))
     #输入向量
     padded_docs = get_encoded_docs(wordlist)
     #标签集合
