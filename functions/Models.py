@@ -1,4 +1,6 @@
 import functions.ReadDataFile as rdf
+import functions.TextCnn as tcnn
+import functions.LSTM as lstm
 import numpy as np
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import Sequential
@@ -8,13 +10,14 @@ from keras.layers.embeddings import Embedding
 from keras.preprocessing.text import text
 from tensorflow.keras.callbacks import TensorBoard
 from sklearn.model_selection import StratifiedKFold
+from sklearn import preprocessing
 
 #词索引数
-vocab_size = 3000
+vocab_size = 6000
 #句子最大词数
-maxLength = 400
+maxLength = 135
 #词向量维度
-word_vector_size = 200
+word_vector_size = 300
 #交叉验证方法
 kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=7)
 
@@ -44,8 +47,19 @@ def init_base_line_model():
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['acc'])
     return model
 
+def toOneHot(out_put):
+    enc = preprocessing.OneHotEncoder(categories='auto')
+    enc.fit([[0], [1]])
+    out_put2 = []
+    for out in out_put:
+        out_put1 = []
+        out_put1.append(out)
+        out_put2.append(out_put1)
+    result = enc.transform(out_put2)
+    return result.toarray()
+
 if __name__ == "__main__":
-    inputs, outputs = rdf.readcsv('../data/ChnSentiCorp_htl_all.csv')
+    inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
     wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'))
     #输入向量
     padded_docs = get_encoded_docs(wordlist)
@@ -54,13 +68,16 @@ if __name__ == "__main__":
     #模型打分
     scores = []
     # 使用基准模型
-    model = init_base_line_model()
+    # model = init_base_line_model()
 
     for train, test in kfold.split(padded_docs, out_put_array):
+        model = tcnn.init_cnn_model()
+        # model = lstm.init_lstm_model()
         #模型训练
-        model.fit(padded_docs[train], out_put_array[train], epochs=10, verbose=0)
+        model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0)
         #在验证集上评估
-        loss, accuracy = model.evaluate(padded_docs[test], out_put_array[test], verbose=0)
+        loss, accuracy = model.evaluate(padded_docs[test], toOneHot(out_put_array[test]),
+                                        verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
         scores.append(100 * accuracy)
         print(100 * accuracy)
 

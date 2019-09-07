@@ -2,6 +2,10 @@ import pandas as pd
 import jieba
 import numpy as np
 
+fo = open("../formatData/weiboSentiment_train.txt", "w")
+fo2 = open("../formatData/weiboSentiment_text.txt", "w")
+fo3 = open("../formatData/weiboSentiment_eval.txt", "w")
+
 #读取csv文件
 def readcsv(path):
     pd_all = pd.read_csv(path)
@@ -51,10 +55,39 @@ def count_input_doc_length(wordlist):
     print('平均词数及标准差')
     print(np.mean(lengths), np.std(lengths))
 
+def write_file(inputs,outputs):
+    rate = np.array([0.8, 0.1, 0.1])
+    cumsum_rate = np.cumsum(rate)
+    index = 0
+
+    for wordlist in inputs:
+        random = int(np.searchsorted(cumsum_rate, np.random.rand(1) * 1.0))
+        sentence = ""
+        for word in wordlist:
+            sentence = sentence + word + " "
+        label = outputs[index]
+        index = index + 1
+
+        if random == 0:
+            fo.write(sentence.strip() + '_label_')
+            fo.write(str(label))
+            fo.write("\n")
+
+        if random == 1:
+            fo2.write(sentence.strip() + '_label_')
+            fo2.write(str(label))
+            fo2.write("\n")
+
+        if random == 2:
+            fo3.write(sentence.strip() + '_label_')
+            fo3.write(str(label))
+            fo3.write("\n")
+
 # def find_new_words():
 
 
-inputs, outputs = readcsv('../data/ChnSentiCorp_htl_all.csv')
+inputs, outputs = readcsv('../data/weibo_senti_100k.csv')
 wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'))
+write_file(wordlist, outputs)
 count_out_put(outputs)
 count_input_doc_length(wordlist)
