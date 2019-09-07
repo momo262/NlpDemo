@@ -71,7 +71,8 @@ if __name__ == "__main__":
     # model = init_base_line_model()
 
     for train, test in kfold.split(padded_docs, out_put_array):
-        model = tcnn.init_cnn_model()
+        # model = tcnn.init_cnn_model()
+        model = lstm.init_lstm_att_model()
         # model = lstm.init_lstm_model()
         #模型训练
         model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0)
