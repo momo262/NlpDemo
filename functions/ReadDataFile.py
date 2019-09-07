@@ -30,7 +30,8 @@ def readtxtasarray(path):
     return array(stopword)
 
 #将句子列表进行分词，剔除停用词
-def docs_to_wordlist(docs,stopwordlist, whitewordlist):
+# def docs_to_wordlist(docs,stopwordlist, whitewordlist):
+def docs_to_wordlist(docs,stopwordlist):
     #统计被剔除词
     deletedwordlist={}
     wordlist = []
@@ -38,26 +39,15 @@ def docs_to_wordlist(docs,stopwordlist, whitewordlist):
     jieba.load_userdict(readtxt('../data/自定义微博词库.txt'))
 
     # 统计表情词
-    emojiwords = readtxt('../data/自定义微博词库.txt')
+    # emojiwords = readtxt('../data/自定义微博词库.txt')
+    # 检测
     for doc in docs:
-        try:
-            searchObj = re.search("\\[(.*?)\\]", doc)
-        except TypeError as e :
-            print("发生异常：" + str(doc))
-            searchObj = None
-        if (searchObj is not None):
-            groups = searchObj.groups();
-            if (groups.__len__() > 0):
-                groups = searchObj.groups()
-                for emoji in groups:
-                    if emoji not in emojiwords :
-                        emojiwords.add(emoji)
-
         words = []
         seg_list = jieba.cut(str(doc))
         for word in seg_list:
 
-            if (word in whitewordlist) or (word not in stopwordlist and not word.isdigit()):
+            if (word not in stopwordlist and not word.isdigit()):
+            # if (word in whitewordlist) or (word not in stopwordlist and not word.isdigit()):
                 words.append(word)
             else:
                 #已经被剔除过，则+1，否则put进去
@@ -67,17 +57,6 @@ def docs_to_wordlist(docs,stopwordlist, whitewordlist):
                     deletedwordlist[word] = 1
         wordlist.append(words)
 
-    print(emojiwords)
-    # 将收集到的词写入词库
-    if (emojiwords.__len__() > 0) :
-        f = open('../data/自定义微博词库.txt', 'a')
-        for emoji in emojiwords:
-        # f.writelines(emojiwords)
-            if (emoji.startswith('[')) :
-                f.write(emoji + "\n")
-            else:
-                f.write("[" + emoji + "]\n")
-        f.close()
     deletedwordlist = sorted(deletedwordlist.items(), key=lambda x: x[1], reverse=True)
     print(deletedwordlist)
     return wordlist
@@ -135,6 +114,7 @@ def write_file(inputs,outputs):
 
 
 inputs, outputs = readcsv('../data/weibo_senti_100k.csv')
+# wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'), readtxt('../data/白名单词库.txt'))
 wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'))
 write_file(wordlist, outputs)
 count_out_put(outputs)

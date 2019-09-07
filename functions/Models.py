@@ -1,3 +1,6 @@
+
+from tensorboard.plugins.hparams import keras
+
 import functions.ReadDataFile as rdf
 import functions.TextCnn as tcnn
 import functions.LSTM as lstm
@@ -11,6 +14,11 @@ from keras.preprocessing.text import text
 from tensorflow.keras.callbacks import TensorBoard
 from sklearn.model_selection import StratifiedKFold
 from sklearn import preprocessing
+# keras模型可视化
+from keras.utils import plot_model
+from keras.callbacks import TensorBoard
+from keras.models import load_model
+
 
 #词索引数
 vocab_size = 6000
@@ -60,7 +68,10 @@ def toOneHot(out_put):
 
 if __name__ == "__main__":
     inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
+    # inputs, outputs = rdf.readcsv('../data/ChnSentiCorp_htl_all.csv')
+    # wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'), rdf.readtxt('../data/白名单词库.txt'))
     wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'))
+
     #输入向量
     padded_docs = get_encoded_docs(wordlist)
     #标签集合
@@ -69,17 +80,35 @@ if __name__ == "__main__":
     scores = []
     # 使用基准模型
     # model = init_base_line_model()
-
+    index = 0
     for train, test in kfold.split(padded_docs, out_put_array):
         model = tcnn.init_cnn_model()
         # model = lstm.init_lstm_model()
+        # model = init_base_line_model()
         #模型训练
         model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0)
+        # model.fit(padded_docs[train], out_put_array[train], epochs=10, verbose=0)
+        # 加载模型
+        # model = load_model("model_" + str(index) + ".h5")
+
         #在验证集上评估
         loss, accuracy = model.evaluate(padded_docs[test], toOneHot(out_put_array[test]),
                                         verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
+        # loss, accuracy = model.evaluate(padded_docs[test], out_put_array[test], verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
+
         scores.append(100 * accuracy)
         print(100 * accuracy)
+        # 模型结构图
+        plot_model(model, to_file='../data/modeldir/model_' + str(index) + '.png')
+        # 导出模型
+        model.save("../data/modeldir/modelDetail_" + str(index) + ".h5")
+        model = load_model("model_" + str(index) + ".h5")
+        json_string = model.to_json()
+        # fileObject = open('../data/modeldir/modeldata.json', 'a')
+        fileObject = open('../data/modeldir/modeldata_'+ str(index) + '.json', 'w')
+        fileObject.write(json_string)
+        fileObject.close()
+        index += 1
 
     #打印准确率分布
     print("%.2f%% (+/- %.2f%%)" % (np.mean(scores), np.std(scores)))
