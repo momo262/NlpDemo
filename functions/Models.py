@@ -59,7 +59,7 @@ def toOneHot(out_put):
     return result.toarray()
 
 if __name__ == "__main__":
-    inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
+    inputs, outputs = rdf.readcsv('../data/ChnSentiCorp_htl_all.csv')
     wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'))
     #输入向量
     padded_docs = get_encoded_docs(wordlist)
@@ -72,13 +72,16 @@ if __name__ == "__main__":
 
     for train, test in kfold.split(padded_docs, out_put_array):
         # model = tcnn.init_cnn_model()
-        model = lstm.init_lstm_att_model()
-        # model = lstm.init_lstm_model()
+        # model = lstm.init_lstm_att_model()
+        #model = lstm.init_lstm_model()
+        model = init_base_line_model()
         #模型训练
-        model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0)
+        # model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
+        model.fit(padded_docs[train], out_put_array[train],
+                  epochs=4, verbose=0,class_weight='auto', callbacks=[TensorBoard(log_dir='./tmp/log')])
         #在验证集上评估
         loss, accuracy = model.evaluate(padded_docs[test], toOneHot(out_put_array[test]),
-                                        verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
+                                        verbose=0)
         scores.append(100 * accuracy)
         print(100 * accuracy)
 

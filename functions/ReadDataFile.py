@@ -8,12 +8,16 @@ fo3 = open("../formatData/weiboSentiment_eval.txt", "w")
 
 #读取csv文件
 def readcsv(path):
-    pd_all = pd.read_csv(path)
+    pd_all = pd.read_csv(path,encoding ='GB18030')
     inputs = []
     outputs = []
     for index in pd_all.index:
-        inputs.append(pd_all.loc[index].review)
-        outputs.append(pd_all.loc[index].label)
+        inputs.append(pd_all.loc[index].text)
+        if (pd_all.loc[index].emotion == '正面'):
+            outputs.append(1)
+        else:
+            outputs.append(0)
+        # outputs.append(pd_all.loc[index].emotion)
     return inputs, outputs
 
 #读取txt文件
@@ -86,7 +90,7 @@ def write_file(inputs,outputs):
 # def find_new_words():
 
 
-inputs, outputs = readcsv('../data/weibo_senti_100k.csv')
+inputs, outputs = readcsv('../data/train.csv')
 wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'))
 write_file(wordlist, outputs)
 count_out_put(outputs)
