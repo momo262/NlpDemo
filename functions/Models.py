@@ -67,8 +67,8 @@ def toOneHot(out_put):
     return result.toarray()
 
 if __name__ == "__main__":
-    inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
-    # inputs, outputs = rdf.readcsv('../data/ChnSentiCorp_htl_all.csv')
+    # inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
+    inputs, outputs = rdf.readcsv('../data/ChnSentiCorp_htl_all.csv')
     # wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'), rdf.readtxt('../data/白名单词库.txt'))
     wordlist = rdf.docs_to_wordlist(inputs, rdf.readtxt('../data/中文停用词库.txt'))
 
@@ -81,21 +81,23 @@ if __name__ == "__main__":
     # 使用基准模型
     # model = init_base_line_model()
     index = 0
+    # model = load_model("../data/modeldir/modelDetail_" + str(index) + ".h5")
     for train, test in kfold.split(padded_docs, out_put_array):
         # model = tcnn.init_cnn_model()
-        model = lstm.init_lstm_att_model()
+        # model = lstm.init_lstm_att_model()
         # model = lstm.init_lstm_model()
-        # model = init_base_line_model()
+        model = init_base_line_model()
         #模型训练
-        model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0)
-        # model.fit(padded_docs[train], out_put_array[train], epochs=10, verbose=0)
+        # model.fit(padded_docs[train], toOneHot(out_put_array[train]), epochs=4, verbose=0)
+        model = load_model("../data/modeldir/modelDetail_" + str(index) + ".h5")
+        model.fit(padded_docs[train], out_put_array[train], epochs=10, verbose=0)
         # 加载模型
         # model = load_model("model_" + str(index) + ".h5")
-
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
         #在验证集上评估
-        loss, accuracy = model.evaluate(padded_docs[test], toOneHot(out_put_array[test]),
-                                        verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
-        # loss, accuracy = model.evaluate(padded_docs[test], out_put_array[test], verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
+        # loss, accuracy = model.evaluate(padded_docs[test], toOneHot(out_put_array[test]),
+        #                                 verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
+        loss, accuracy = model.evaluate(padded_docs[test], out_put_array[test], verbose=0, callbacks=[TensorBoard(log_dir='./tmp/log')])
 
         scores.append(100 * accuracy)
         print(100 * accuracy)
@@ -103,12 +105,21 @@ if __name__ == "__main__":
         plot_model(model, to_file='../data/modeldir/model_' + str(index) + '.png')
         # 导出模型
         model.save("../data/modeldir/modelDetail_" + str(index) + ".h5")
-        model = load_model("model_" + str(index) + ".h5")
-        json_string = model.to_json()
+
+        print("/n验证模型load")
+        model = init_base_line_model()
+        model = load_model("../data/modeldir/modelDetail_" + str(index) + ".h5")
+        loss, accuracy = model.evaluate(padded_docs[test], out_put_array[test], verbose=0,
+                                        callbacks=[TensorBoard(log_dir='./tmp/log')])
+
+        scores.append(100 * accuracy)
+        print(100 * accuracy)
+
+        # json_string = model.to_json()
         # fileObject = open('../data/modeldir/modeldata.json', 'a')
-        fileObject = open('../data/modeldir/modeldata_'+ str(index) + '.json', 'w')
-        fileObject.write(json_string)
-        fileObject.close()
+        # fileObject = open('../data/modeldir/modeldata_'+ str(index) + '.json', 'w')
+        # fileObject.write(json_string)
+        # fileObject.close()
         index += 1
 
     #打印准确率分布
