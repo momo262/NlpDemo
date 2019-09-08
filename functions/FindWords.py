@@ -1,5 +1,6 @@
 import re
 import functions.ReadDataFile as rdf
+import pandas as pd
 
 def readtxt(path):
     with open(path, 'r') as f:
@@ -8,8 +9,8 @@ def readtxt(path):
 
 def find_emoji_words(docs):
     # 统计表情词
-    # emojiwords={}
-    emojiwords = readtxt('../data/自定义微博词库.txt')
+    emojiwords= set()
+    # emojiwords = readtxt('../data/自定义微博词库.txt')
     newemojiwords = set()
     # 检测
     for doc in docs:
@@ -78,7 +79,24 @@ def find_topic_words(docs):
     file.close()
 
 
-inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
+# inputs, outputs = rdf.readcsv('../data/weibo_senti_100k.csv')
 # find_emoji_words(inputs)
-find_topic_words(inputs)
+inputs = []
+outputs = []
+pd_all = pd.read_csv("../matchOriginData/【测试语料】正负面测试语料（选手用）.csv",
+                     encoding='gb18030')
+# pd_all = pd.read_csv("../data/weibo_senti_100k.csv",index_col=0)
+# print(pd_all)
+file = open('../data/验证集评论.txt', 'a')
+for index in pd_all.index:
+    print(pd_all.loc[index].text)
+    inputs.append(pd_all.loc[index].text)
+    file.write(str(pd_all.loc[index].text) + "\n")
+    # outputs.append(pd_all.loc[index].emotion)
+
+print(inputs)
+print("评论加载完毕")
+inputs = rdf.readtxt("../data/验证集评论.txt")
+find_emoji_words(inputs)
+# find_topic_words(inputs)
 
