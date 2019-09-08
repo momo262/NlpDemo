@@ -57,8 +57,8 @@ def docs_to_wordlist(docs,stopwordlist):
                     deletedwordlist[word] = 1
         wordlist.append(words)
 
-    deletedwordlist = sorted(deletedwordlist.items(), key=lambda x: x[1], reverse=True)
-    print(deletedwordlist)
+    # deletedwordlist = sorted(deletedwordlist.items(), key=lambda x: x[1], reverse=True)
+    # print(deletedwordlist)
     return wordlist
 
 #统计标签的类别分布
@@ -113,9 +113,9 @@ def write_file(inputs,outputs):
 # def find_new_words():
 
 
-inputs, outputs = readcsv('../data/weibo_senti_100k.csv')
-# wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'), readtxt('../data/白名单词库.txt'))
-wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'))
-write_file(wordlist, outputs)
-count_out_put(outputs)
-count_input_doc_length(wordlist)
+# inputs, outputs = readcsv('../data/weibo_senti_100k.csv')
+# # wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'), readtxt('../data/白名单词库.txt'))
+# wordlist = docs_to_wordlist(inputs, readtxt('../data/中文停用词库.txt'))
+# write_file(wordlist, outputs)
+# count_out_put(outputs)
+# count_input_doc_length(wordlist)

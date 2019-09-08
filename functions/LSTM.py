@@ -50,6 +50,7 @@ def init_lstm_att_model():
     output = Dense(2, activation='softmax')(output)
     model = Model(inputs=input_, outputs=output)
     model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["acc"])
-    return model
     print(model.summary())
+    return model
+
 
